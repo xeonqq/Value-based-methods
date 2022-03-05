@@ -35,6 +35,7 @@ The result of the two heads are summed up by the following equation to form the 
 
 ### Demo
 Runing the trained model with exploration epsilon = 0.01
+
 ![](pics/dqn_demo.gif)
 
 
