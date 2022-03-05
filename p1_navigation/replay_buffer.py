@@ -26,9 +26,9 @@ class ReplayBuffer:
         self.e = 1e-3
         self.unform_sample_factor = 0.5  # 0 means completely uniform
 
-    def add(self, state, action, reward, next_state, done, priority):
+    def add(self, state, action, reward, next_state, done):
         """Add a new experience to memory."""
-        e = self.experience(state, action, reward, next_state, done, priority)
+        e = self.experience(state, action, reward, next_state, done)
         self.memory.append(e)
 
     def sample(self):

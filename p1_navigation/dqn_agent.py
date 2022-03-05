@@ -47,29 +47,30 @@ class Agent():
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
-    
+    def td_error(self, state, action, reward,next_state, done):
+        next_state_tensor = torch.from_numpy(next_state).float().unsqueeze(0).to(device)
+        state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(device)
+
+        target_action_values_next = self.qnetwork_target(next_state_tensor)
+        target_action_values_next = target_action_values_next.cpu().data.numpy()
+        Q_targets_next = np.max(target_action_values_next)
+        # Compute Q targets for current states
+        Q_targets = reward + (GAMMA * Q_targets_next * (1 - done))
+        self.qnetwork_local.eval()
+        with torch.no_grad():
+            action_values = self.qnetwork_local(state_tensor)
+        self.qnetwork_local.train()
+        Q_expected = action_values.cpu().data.numpy()[0][action]
+        return Q_targets-Q_expected
+
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
-#         next_state_tensor = torch.from_numpy(next_state).float().unsqueeze(0).to(device)
-#         state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(device)
-
-#         target_action_values_next = self.qnetwork_target(next_state_tensor)
-#         target_action_values_next = target_action_values_next.cpu().data.numpy()
-#         Q_targets_next = np.max(target_action_values_next)
-#                             # Compute Q targets for current states 
-       
-#         Q_targets = reward + (GAMMA * Q_targets_next * (1 - done))
-#         self.qnetwork_local.eval()
-#         with torch.no_grad():
-#              action_values = self.qnetwork_local(state_tensor)        
-#         self.qnetwork_local.train()
-#         Q_expected = action_values.cpu().data.numpy()[0][action]
-#         priority=np.abs(Q_targets-Q_expected)
+        # error = self.td_error(state, action, reward, next_state, done)
         if self.use_priority_buffer:
             self.memory.add(state, action, reward, next_state, done)
         else:
             self.memory.add(state, action, reward, next_state, done)
-        
+
         # Learn every UPDATE_EVERY time steps.
         self.t_step = (self.t_step + 1) % UPDATE_EVERY
         if self.t_step == 0:

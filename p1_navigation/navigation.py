@@ -1,4 +1,5 @@
 from unityagents import UnityEnvironment
+import time
 import numpy as np
 import torch
 from collections import deque
@@ -44,6 +45,24 @@ class Environment(object):
         self._seed= seed
         self._agent = Agent(self._state_size, self._action_size, self._seed)
 
+    def run_model(self, model, num_episode=3, steps_per_episode=300):
+        self._agent.qnetwork_local.load_state_dict(torch.load(model))
+
+        for i in range(num_episode):
+            env_info = self._env.reset(train_mode=True)[self._brain_name]
+            state = get_next_state(env_info)
+            score = 0
+            for j in range(steps_per_episode):
+                action = self._agent.act(state, 0.01)
+                env_info = self._env.step(action)[self._brain_name]  # send the action to the environment
+                next_state, reward, done = get_env_step_results(env_info)
+                score += reward  # update the score
+                state = next_state  # roll over the state to next time step
+                time.sleep(1/30.0)
+                if done:
+                    print("Episode: {}, score: {}".format(i, score))
+                    break
+
     def close(self):
         self._env.close()
 
@@ -70,6 +89,7 @@ class Environment(object):
                 action = self._agent.act(state, eps)
                 env_info = self._env.step(action)[self._brain_name]  # send the action to the environment
                 next_state, reward, done = get_env_step_results(env_info)
+                self._agent.step(state, action, reward, next_state, done)
                 score += reward  # update the score
                 state = next_state  # roll over the state to next time step
                 if done:
@@ -80,12 +100,13 @@ class Environment(object):
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
             if i_episode % 100 == 0:
                 print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
-            if np.mean(scores_window) >= 4.0:
+            if np.mean(scores_window) >= 15:
                 print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(i_episode - 100,
                                                                                              np.mean(scores_window)))
                 torch.save(self._agent.qnetwork_local.state_dict(), 'checkpoint.pth')
                 break
         return scores
+
 
 def plot_scores(scores):
     # plot the scores
@@ -94,8 +115,10 @@ def plot_scores(scores):
     plt.plot(np.arange(len(scores)), scores)
     plt.ylabel('Score')
     plt.xlabel('Episode #')
+    plt.savefig("qdn_score.png")
     plt.show()
-    
+
+
 if __name__ == "__main__":
     env = Environment(UnityEnvironment(file_name="Banana_Linux/Banana.x86_64"))
     scores = env.train()
