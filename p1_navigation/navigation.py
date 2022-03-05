@@ -126,8 +126,12 @@ def plot_scores(scores):
     plt.show()
 
 
-if __name__ == "__main__":
+def train():
     env = Environment(UnityEnvironment(file_name="Banana_Linux/Banana.x86_64"))
     scores = env.train()
     plot_scores(scores)
     env.close()
+
+
+if __name__ == "__main__":
+    train()
