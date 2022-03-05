@@ -105,11 +105,14 @@ class Agent():
         ## TODO: compute and minimize the loss
         "*** YOUR CODE HERE ***"
         # Get max predicted Q values (for next states) from target model
-        #         Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
+        # Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
 
-        argmax_actions_from_local_Q = self.qnetwork_local(next_states).detach().max(1)[1].unsqueeze(1)
-        Q_targets_values_next = self.qnetwork_target(next_states).detach()
-        Q_targets_next = Q_targets_values_next.gather(1, argmax_actions_from_local_Q)
+        self.qnetwork_local.eval()
+        with torch.no_grad():
+            argmax_actions_from_local_Q = self.qnetwork_local(next_states).detach().max(1)[1].unsqueeze(1)
+            Q_targets_values_next = self.qnetwork_target(next_states).detach()
+            Q_targets_next = Q_targets_values_next.gather(1, argmax_actions_from_local_Q)
+        self.qnetwork_local.train()
 
         # Compute Q targets for current states 
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))

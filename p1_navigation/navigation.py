@@ -80,7 +80,7 @@ class Environment(object):
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
             if i_episode % 100 == 0:
                 print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
-            if np.mean(scores_window) >= 10.0:
+            if np.mean(scores_window) >= 4.0:
                 print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(i_episode - 100,
                                                                                              np.mean(scores_window)))
                 torch.save(self._agent.qnetwork_local.state_dict(), 'checkpoint.pth')
