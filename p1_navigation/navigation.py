@@ -1,15 +1,18 @@
-from unityagents import UnityEnvironment
 import time
+from collections import deque
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from collections import deque
+from unityagents import UnityEnvironment
+
 from dqn_agent import Agent
-import matplotlib.pyplot as plt
 
 
 def get_next_state(env_info):
     next_state = env_info.vector_observations[0]  # get the next state
     return next_state
+
 
 def get_reward(env_info):
     reward = env_info.rewards[0]  # get the reward
@@ -20,8 +23,10 @@ def get_done(env_info):
     done = env_info.local_done[0]  # see if episode has finished
     return done
 
+
 def get_env_step_results(env_info):
     return get_next_state(env_info), get_reward(env_info), get_done(env_info)
+
 
 class Environment(object):
     def __init__(self, env, seed=42):
@@ -42,7 +47,7 @@ class Environment(object):
         print('States look like:', state)
         self._state_size = len(state)
         print('States have length:', self._state_size)
-        self._seed= seed
+        self._seed = seed
         self._agent = Agent(self._state_size, self._action_size, self._seed)
 
     def run_model(self, model, num_episode=3, steps_per_episode=300):
@@ -58,7 +63,7 @@ class Environment(object):
                 next_state, reward, done = get_env_step_results(env_info)
                 score += reward  # update the score
                 state = next_state  # roll over the state to next time step
-                time.sleep(1/30.0)
+                time.sleep(1 / 30.0)
                 if done:
                     print("Episode: {}, score: {}".format(i, score))
                     break
@@ -81,6 +86,7 @@ class Environment(object):
         scores_window = deque(maxlen=100)  # last 100 scores
         eps = eps_start
 
+        b = 1e-4
         for i_episode in range(1, n_episodes + 1):
             env_info = self._env.reset(train_mode=True)[self._brain_name]
             state = get_next_state(env_info)
@@ -89,7 +95,7 @@ class Environment(object):
                 action = self._agent.act(state, eps)
                 env_info = self._env.step(action)[self._brain_name]  # send the action to the environment
                 next_state, reward, done = get_env_step_results(env_info)
-                self._agent.step(state, action, reward, next_state, done)
+                self._agent.step(state, action, reward, next_state, done, b)
                 score += reward  # update the score
                 state = next_state  # roll over the state to next time step
                 if done:
@@ -97,6 +103,7 @@ class Environment(object):
             scores_window.append(score)  # save most recent score
             scores.append(score)  # save most recent score
             eps = max(eps_end, eps_decay * eps)  # decrease epsilon
+            b = min(1.0, b * 1.001)
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
             if i_episode % 100 == 0:
                 print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
@@ -124,4 +131,3 @@ if __name__ == "__main__":
     scores = env.train()
     plot_scores(scores)
     env.close()
-

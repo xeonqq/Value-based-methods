@@ -1,7 +1,6 @@
-from navigation import Environment
 from unityagents import UnityEnvironment
-import torch
 
+from navigation import Environment
 
 if __name__ == "__main__":
     env = Environment(UnityEnvironment(file_name="Banana_Linux/Banana.x86_64"))
