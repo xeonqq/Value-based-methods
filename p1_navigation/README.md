@@ -53,3 +53,16 @@ You need only select the environment that matches your operating system:
 Then, place the file in the `p1_navigation/` folder in the course GitHub repository, and unzip (or decompress) the file.  Next, open `Navigation_Pixels.ipynb` and follow the instructions to learn how to use the Python API to control the agent.
 
 (_For AWS_) If you'd like to train the agent on AWS, you must follow the instructions to [set up X Server](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the **Linux** operating system above.
+
+### Running the training
+```bash
+python3 navigation.py
+```
+Unity Gui will pop up and demonstate the learning process, a checkpoint file will be generated at the end of the training
+
+### Running the model
+A pre-trained model checkpoint file is provided to run the agent, simply run:
+```bash
+python3 run_model.py
+```
+It will run the agent for 3 episode, and with epsilon = 0.01

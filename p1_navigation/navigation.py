@@ -122,7 +122,7 @@ def plot_scores(scores):
     plt.plot(np.arange(len(scores)), scores)
     plt.ylabel('Score')
     plt.xlabel('Episode #')
-    plt.savefig("qdn_score.png")
+    plt.savefig("dqn_score.png")
     plt.show()
 
 
