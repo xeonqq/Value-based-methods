@@ -21,7 +21,7 @@ UPDATE_EVERY = 4  # how often to update the network
 class Agent():
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, seed, use_priority_buffer=False):
+    def __init__(self, state_size, action_size, seed, use_priority_buffer=True):
         """Initialize an Agent object.
         
         Params
@@ -66,20 +66,15 @@ class Agent():
     def step(self, state, action, reward, next_state, done, b=0):
         # Save experience in replay memory
 
-        if self.use_priority_buffer:
-            abs_td_error = np.abs(self.td_error(state, action, reward, next_state, done))
-
-            self.memory.add(state, action, reward, next_state, done, abs_td_error)
-        else:
-            self.memory.add(state, action, reward, next_state, done)
+        self.memory.add(state, action, reward, next_state, done)
 
         # Learn every UPDATE_EVERY time steps.
         self.t_step = (self.t_step + 1) % UPDATE_EVERY
         if self.t_step == 0:
             # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > BATCH_SIZE:
-                experiences = self.memory.sample()
-                self.learn(experiences, GAMMA, b)
+                experiences = self.memory.sample(b)
+                self.learn(experiences, GAMMA)
 
     #         return state, action, reward, next_state, done,priority
 
@@ -103,7 +98,7 @@ class Agent():
         else:
             return random.choice(np.arange(self.action_size))
 
-    def learn(self, experiences, gamma, b=0):
+    def learn(self, experiences, gamma):
         """Update value parameters using given batch of experience tuples.
 
         Params
@@ -112,7 +107,7 @@ class Agent():
             gamma (float): discount factor
         """
         if self.use_priority_buffer:
-            states, actions, rewards, next_states, dones, probs = experiences
+            states, actions, rewards, next_states, dones, probs, sampling_weights = experiences
         else:
             states, actions, rewards, next_states, dones = experiences
         ## TODO: compute and minimize the loss
@@ -134,7 +129,8 @@ class Agent():
         Q_expected = self.qnetwork_local(states).gather(1, actions)
 
         if self.use_priority_buffer:
-            sampling_weights = (1/len(self.memory)*1/probs)**b
+            td_errors = Q_targets.cpu().data.numpy()-Q_expected.cpu().data.numpy()
+            self.memory.update_td_errors(td_errors)
             loss = F.mse_loss(Q_expected*sampling_weights, Q_targets*sampling_weights)
         else:
             loss = F.mse_loss(Q_expected, Q_targets)
