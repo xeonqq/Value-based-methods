@@ -22,9 +22,9 @@ UPDATE_EVERY = 4  # how often to update the network
 ```
 
 ### Results
-The training will terminate once average score reaches 12.
+The training will terminate once average score reaches 13.
 
-The network converges in 370 episodes
+The network converges in 418 episodes
 
 The score per episode during training:
 
