@@ -8,9 +8,10 @@ from unityagents import UnityEnvironment
 
 from dqn_agent import Agent
 
-EPS_START=0.5
-EPS_END=0.01
-EPS_DECAY=0.995
+EPS_START = 0.7
+EPS_END = 0.01
+EPS_DECAY = 0.99
+
 
 def get_next_state(env_info):
     next_state = env_info.vector_observations[0]  # get the next state
