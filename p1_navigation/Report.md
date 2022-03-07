@@ -1,5 +1,5 @@
 ## Navigation Project Report
-##Learning Algorithm
+### Learning Algorithm
 
 In this project, the agent's goal is to collect as much yellow bananas as possible in a given episode with limited time.
 The agent has full access to the state (37 variables) of the environment, and 4 movements as its actions.
