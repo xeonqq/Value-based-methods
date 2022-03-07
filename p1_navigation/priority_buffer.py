@@ -11,8 +11,8 @@ from device import device
 class PriorityBuffer:
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, action_size, buffer_size, batch_size, seed, min_non_zero_error=1e-4,
-                 uniform_sample_factor_alpha=0.9):
+    def __init__(self, action_size, buffer_size, batch_size, seed, min_non_zero_error=1e-5,
+                 uniform_sample_factor_alpha=0.6):
         """Initialize a ReplayBuffer object.
 
         Params
@@ -26,7 +26,7 @@ class PriorityBuffer:
         self.memory = deque(maxlen=buffer_size)
         self.batch_size = batch_size
         self.experience = recordtype("Experience",
-                                     field_names=["state", "action", "reward", "next_state", "done", "abs_td_error", "importance_sampling_weight"])
+                                     field_names=["state", "action", "reward", "next_state", "done", "abs_td_error"])
         self.seed = random.seed(seed)
         self.min_non_zero_error = min_non_zero_error
         self.uniform_sample_factor = uniform_sample_factor_alpha  # 0 means completely uniform
@@ -37,7 +37,7 @@ class PriorityBuffer:
 
     def add(self, state, action, reward, next_state, done):
         """Add a new experience to memory."""
-        e = self.experience(state, action, reward, next_state, done, self.max_td_error, 0)
+        e = self.experience(state, action, reward, next_state, done, self.max_td_error)
         self.memory.append(e)
 
     def _select_sampled_experiences(self):

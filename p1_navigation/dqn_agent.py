@@ -21,7 +21,7 @@ UPDATE_EVERY = 4  # how often to update the network
 class Agent():
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, seed, use_priority_buffer=True):
+    def __init__(self, state_size, action_size, seed, use_priority_buffer=False):
         """Initialize an Agent object.
         
         Params
@@ -47,22 +47,6 @@ class Agent():
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
-    def td_error(self, state, action, reward, next_state, done):
-        next_state_tensor = torch.from_numpy(next_state).float().unsqueeze(0).to(device)
-        state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(device)
-
-        target_action_values_next = self.qnetwork_target(next_state_tensor)
-        target_action_values_next = target_action_values_next.cpu().data.numpy()
-        Q_targets_next = np.max(target_action_values_next)
-        # Compute Q targets for current states
-        Q_targets = reward + (GAMMA * Q_targets_next * (1 - done))
-        self.qnetwork_local.eval()
-        with torch.no_grad():
-            action_values = self.qnetwork_local(state_tensor)
-        self.qnetwork_local.train()
-        Q_expected = action_values.cpu().data.numpy()[0][action]
-        return Q_targets - Q_expected
-
     def step(self, state, action, reward, next_state, done, b=0):
         # Save experience in replay memory
 
@@ -75,8 +59,6 @@ class Agent():
             if len(self.memory) > BATCH_SIZE:
                 experiences = self.memory.sample(b)
                 self.learn(experiences, GAMMA)
-
-    #         return state, action, reward, next_state, done,priority
 
     def act(self, state, eps=0.):
         """Returns actions for given state as per current policy.
@@ -131,6 +113,7 @@ class Agent():
         if self.use_priority_buffer:
             td_errors = Q_targets.cpu().data.numpy()-Q_expected.cpu().data.numpy()
             self.memory.update_td_errors(td_errors)
+            sampling_weights.pow_(0.5)
             loss = F.mse_loss(Q_expected*sampling_weights, Q_targets*sampling_weights)
         else:
             loss = F.mse_loss(Q_expected, Q_targets)

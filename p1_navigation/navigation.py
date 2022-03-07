@@ -8,6 +8,9 @@ from unityagents import UnityEnvironment
 
 from dqn_agent import Agent
 
+EPS_START=0.5
+EPS_END=0.01
+EPS_DECAY=0.995
 
 def get_next_state(env_info):
     next_state = env_info.vector_observations[0]  # get the next state
@@ -71,7 +74,7 @@ class Environment(object):
     def close(self):
         self._env.close()
 
-    def train(self, n_episodes=2000, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.995):
+    def train(self, n_episodes=2000, max_t=1000, eps_start=EPS_START, eps_end=EPS_END, eps_decay=EPS_DECAY):
         """Deep Q-Learning.
 
             Params
